@@ -21,11 +21,11 @@ There will be employed a handful of technologies in various fields to make the r
 
 ### Vision
 
-Use InsightFace, being ReticaFace for detection and ArcFace for recognition. The implementation will be made with ort to run ONNX runtime. The processing will be offloaded to iGPU with OpenVINO with AMD support.
+Use InsightFace, being ReticaFace for detection and ArcFace for recognition. The implementation will be made with ort to run ONNX runtime. The processing will be offloaded to iGPU with OpenVINO with AMD support. In addition, MiniXception model will serve to feed the robot with the visual emotions of the speaker.
 
 ### Hearing
 
-Similar vision, using ONNX to run SenseVoice-Small model. The model will also provide speech emotion recognition(SER) and audio event detection(AED) with low latency. Use a full duplex approach with a sliding window buffer for audio. The audio will be handled to the SLM wiht cpal crate.
+Similar vision, using ONNX to run SenseVoice-Small model. The model will also provide speech emotion recognition(SER) and audio event detection(AED) with low latency. Use a full duplex approach with a sliding window buffer for audio. The audio will be handled to the SLM wiht cpal crate. A direction of arrival need to be employed for know the direction the sound is coming from.
 
 ### Thinking
 
@@ -43,9 +43,15 @@ Because of the fact that I hate python and C++, I was considering using both:
 
 ## Architecture
 
-### Unified Person Identification
+### Unified Person Identification (UPI)
 
+- **Spatial Fusion:** Combines ReSpeaker DoA (Direction of Arrival) with RetinaFace coordinates.
+- **Persistence:** Uses ArcFace embeddings to "remember" a user even if they leave the frame and return.
 
+### Hexagonal Ports
+
+- `trait EyeController`: Methods for `look_at(x, y)`, `blink()`, and `saccade()`.
+- `trait VoiceEmitter`: Methods for `speak(text, emotion_tint)`.
 
 ## Hardware
 
