@@ -15,6 +15,7 @@ Primary language: Portuguese (English support possibly later).
 | [subsystems/speech.md](subsystems/speech.md) | TTS via Sherpa-ONNX + Piper |
 | [hardware.md](hardware.md) | BOM + rationale |
 | [constraints.md](constraints.md) | Testable targets (latency, FPS, memory) |
+| [testing.md](testing.md) | Simulation vs benchmark — complementary validation (replay vs hardware measurement) |
 | [decisions.md](decisions.md) | ADRs (Rust+C, Qwen vs Llama, ONNX stack) |
 | [glossary.md](glossary.md) | UPI, DoA, AED, SER, Q4_K_M, etc. |
 | [roadmap.md](roadmap.md) | Component status table |

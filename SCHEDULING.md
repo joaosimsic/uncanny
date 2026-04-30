@@ -279,4 +279,5 @@ Seeded — expand as decisions are made. Promote resolved entries to [docs/decis
 - [docs/subsystems/behavior.md](docs/subsystems/behavior.md) — output ports.
 - [docs/subsystems/speech.md](docs/subsystems/speech.md) — TTS queue + interrupt rules referenced in §6.
 - [docs/benchmark.md](docs/benchmark.md) — measurement tool to validate every TBD in this doc.
+- [docs/testing.md](docs/testing.md) — simulation (deterministic replay) vs benchmark (hardware measurement): what each validates.
 - [docs/roadmap.md](docs/roadmap.md) — component status.
