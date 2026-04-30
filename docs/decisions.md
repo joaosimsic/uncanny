@@ -26,7 +26,9 @@ Light-weight architecture decision log. Each entry: **what, why, status.**
 - Good multilingual coverage including Portuguese.
 - Fits within the baseline PC envelope in `hardware.md` (Ryzen 5 7430U + 16 GB RAM).
 
-**Caveat:** the [benchmark CLI](benchmark.md) currently runs **Llama-3.2-1B**. That benchmark predates this ADR; rerun against Qwen 3B to confirm fit on the baseline hardware profile in `hardware.md` (Ryzen 5 7430U, 16 GB RAM). If Qwen 3B blows the budget, fall back to Qwen 2.5 1.5B before reverting to Llama.
+**Caveat:** the [benchmark CLI](benchmark.md) is model-agnostic and should be
+used to evaluate multiple candidates against the baseline hardware profile in
+`hardware.md` (Ryzen 5 7430U, 16 GB RAM) before locking the production model.
 
 **Status:** accepted, validation pending.
 

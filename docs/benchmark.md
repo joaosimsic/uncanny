@@ -1,111 +1,116 @@
 # LLM Benchmark Runner
 
-Local CLI wrapper around `llama.cpp` to bench a 4-bit quantized model on the baseline hardware in [hardware.md](hardware.md) (Ryzen 5 7430U / 16 GB RAM / iGPU-only). Used to validate the "Thinking" subsystem candidate model before integrating into the full pipeline.
+`tools/llm-benchmark` is the benchmark CLI used to measure local LLM latency,
+throughput, and stability on the baseline machine in [hardware.md](hardware.md)
+(Ryzen 5 7430U / 16 GB RAM / iGPU-only).
 
-Currently runs **Llama-3.2-1B-Instruct Q4_K_M**. Target model for the production system is Qwen 2.5 3B Q4_K_M — see [decisions.md](decisions.md) ADR-002.
+The benchmark is model-agnostic and can be used with any local GGUF model.
+Any model currently used in local runs should be treated as an isolated test
+selection, not a project-wide benchmark default.
 
-Docker here is test infrastructure only. It is not a source of production constraints.
+## What this tool measures
+
+- TTFT split into prompt decode + first-token decode
+- Throughput (`tps_mean`, `tps_median`)
+- Inter-token latency consistency (`itl_p99_us`, `itl_variance_us2`)
+- Memory before/peak/after run
+- CPU usage samples and thermal readings (Linux, when available)
+- Drift between early vs late generation cadence
+- Optional per-token timeline (`report.flow.jsonl`) for plotting
 
 ## Requirements
 
-- Docker + Docker Compose (optional, for reproducible test runs), or
-- Rust + C++ build toolchain (local run)
-- `curl` (model download)
+- Rust toolchain (`cargo`)
+- C/C++ build prerequisites for `llama-cpp-4`
+- A GGUF model file (default expected under `models/`)
 
-## 1) Download the 4-bit model
+## Build
 
-```bash
-make download-model
-```
-
-Drops `models/Llama-3.2-1B-Instruct-Q4_K_M.gguf`.
-
-## 2) Run in container (test harness)
+From repository root:
 
 ```bash
-make run-docker
+cargo build --release --manifest-path tools/llm-benchmark/Cargo.toml
 ```
 
-One-shot prompt with safer defaults.
-
-### Interactive chat + live resource usage
+Or from the tool directory:
 
 ```bash
-make run-chat-docker
+cd tools/llm-benchmark
+cargo build --release
 ```
 
-- multi-turn chat (default)
-- `--monitor` shows CPU/RAM of model process
+## Run
 
-## 3) Run locally
-
-Needs `llama-cli` at `./bin/llama-cli` (from `llama.cpp`):
+### Quick run (uses config auto-discovery)
 
 ```bash
-make run-local
+cd tools/llm-benchmark
+cargo run --release --
 ```
 
-Local interactive chat with monitoring:
+By default, config is discovered from:
+
+- `llm-benchmark.toml` (current directory)
+- `tools/llm-benchmark/llm-benchmark.toml`
+
+Precedence is: `CLI flags` > `config file` > `built-in defaults`.
+
+### Explicit run with overrides
 
 ```bash
-make run-chat-local
+cd tools/llm-benchmark
+cargo run --release -- \
+  --model-path ../../models/your-model.gguf \
+  --prompt "Summarize local inference tradeoffs in bullets." \
+  --warmup-iterations 1 \
+  --iterations 5 \
+  --n-threads 4 \
+  --gpu-layers 0 \
+  --sampler greedy \
+  --seed 1234 \
+  --max-tokens 128 \
+  --cooldown-secs 2.5 \
+  --jsonl-output report.flow.jsonl \
+  --output report.json
 ```
 
-## Custom prompt
+## Configuration
 
-```bash
-docker compose run --rm llama-runner \
-  --model /app/models/Llama-3.2-1B-Instruct-Q4_K_M.gguf \
-  --prompt "Write a short poem about robotics." \
-  --n-predict 120
-```
+Central defaults live in `tools/llm-benchmark/llm-benchmark.toml`.
 
-Interactive monitored:
+Notable fields:
 
-```bash
-docker compose run --rm llama-runner \
-  --monitor \
-  --monitor-interval-secs 2
-```
+- `model_path`
+- `prompts` (multi-profile workload in one run)
+- `warmup_iterations`, `iterations`
+- `n_threads`, `gpu_layers`
+- `max_tokens`, `cooldown_secs`
+- `sampler`, `seed`, `temperature`, `top_k`, `top_p`
+- `timeout_secs`
+- `output`, `jsonl_output`
 
-One-shot completion mode:
+If `model_path` is not set, the tool auto-discovers the first `.gguf` in:
+`models/`, `../models/`, then `../../models/`.
 
-```bash
-docker compose run --rm llama-runner --no-chat --prompt "Summarize Rust in one paragraph."
-```
+## Output artifacts
 
-## Notes
+- `report.json`: aggregated report with environment, summary, profile summaries,
+  and per-run raw metrics.
+- `report.flow.jsonl` (optional): per-token flow events for cadence plotting.
 
-- Quantization: `Q4_K_M` (4-bit family).
-- Performance varies with host CPU and Docker version.
-- Monitoring uses Linux `/proc` stats from the container/process.
+Key `report.json` sections:
 
-Production sizing and runtime constraints are defined by the target machine in [hardware.md](hardware.md) and [constraints.md](constraints.md), not by container settings.
+- `summary`: aggregate percentiles (`p50`, `p95`, `max`) for TTFT, TPS, and ITL
+- `profiles`: per-prompt profile summaries
+- `runs`: per-iteration detailed metrics
 
-## Low-spec safe mode (first run)
+## Interpretation notes
 
-If desktop freezes/reboots during build/run, stage:
+- For latency (`ttft_us`, `itl_us`): lower is better.
+- `p50` is typical behavior; `p95` is tail latency; `max` is worst outlier.
+- Rising ITL variance and negative TPS drift can indicate throttling or unstable
+  generation cadence.
 
-1. Constrained compile parallelism:
-
-```bash
-make build-safe-image
-```
-
-2. Conservative one-shot:
-
-```bash
-make run-safe
-```
-
-3. If stable, raise one parameter at a time:
-
-- `--threads`: `2 → 3 → 4`
-- `--ctx-size`: `1024 → 1536 → 2048`
-
-4. Watch host pressure:
-
-```bash
-htop
-journalctl -k -b -f
-```
+Production constraints are defined by target hardware and system docs
+([hardware.md](hardware.md), [constraints.md](constraints.md)), not by benchmark
+defaults alone.

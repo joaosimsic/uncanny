@@ -2,7 +2,7 @@
 
 Robot head with human expression and AI-powered talk. Mechanically exposed (no skin), behaviorally human-mimic. Goal: live in the uncanny valley — interaction is supposed to feel uncomfortable.
 
-**Status:** design phase. Only working component is the LLM benchmark runner (`src/main.rs`).
+**Status:** design phase. Only working component is the LLM benchmark runner (`tools/llm-benchmark/src/main.rs`).
 
 ## Docs
 
@@ -14,8 +14,8 @@ Robot head with human expression and AI-powered talk. Mechanically exposed (no s
 ## Quick start (benchmark only)
 
 ```bash
-make download-model
-make run-docker
+cd tools/llm-benchmark
+cargo run --release --
 ```
 
 See [docs/benchmark.md](docs/benchmark.md) for full options.
