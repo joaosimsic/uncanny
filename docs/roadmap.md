@@ -20,6 +20,6 @@ Status snapshot. Update as components move stages.
 ## Next concrete steps
 
 1. Buy ReSpeaker + Arduino + servos.
-2. Bench Qwen 2.5 3B Q4_K_M on the same Docker profile to confirm ADR-002.
+2. Bench Qwen 2.5 3B Q4_K_M on the baseline PC in [hardware.md](hardware.md) to confirm ADR-002 (Docker is optional test tooling only).
 3. Stub `src/ports/{eye,voice}.rs` with the trait definitions from [subsystems/behavior.md](subsystems/behavior.md).
 4. First sim adapter: print-to-stdout `EyeController` so fusion can be exercised end-to-end without hardware.

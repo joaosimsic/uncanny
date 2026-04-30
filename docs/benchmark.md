@@ -1,16 +1,14 @@
 # LLM Benchmark Runner
 
-Local CLI wrapper around `llama.cpp` to bench a 4-bit quantized model on Ryzen 5 / 8GB / iGPU-only hardware. Used to validate the "Thinking" subsystem candidate model before integrating into the full pipeline.
+Local CLI wrapper around `llama.cpp` to bench a 4-bit quantized model on the baseline hardware in [hardware.md](hardware.md) (Ryzen 5 7430U / 16 GB RAM / iGPU-only). Used to validate the "Thinking" subsystem candidate model before integrating into the full pipeline.
 
 Currently runs **Llama-3.2-1B-Instruct Q4_K_M**. Target model for the production system is Qwen 2.5 3B Q4_K_M — see [decisions.md](decisions.md) ADR-002.
 
-Docker profile constraints:
-- `cpus: 2.0`
-- `mem_limit: 4g`
+Docker here is test infrastructure only. It is not a source of production constraints.
 
 ## Requirements
 
-- Docker + Docker Compose (recommended), or
+- Docker + Docker Compose (optional, for reproducible test runs), or
 - Rust + C++ build toolchain (local run)
 - `curl` (model download)
 
@@ -22,7 +20,7 @@ make download-model
 
 Drops `models/Llama-3.2-1B-Instruct-Q4_K_M.gguf`.
 
-## 2) Run in container (recommended)
+## 2) Run in container (test harness)
 
 ```bash
 make run-docker
@@ -39,7 +37,7 @@ make run-chat-docker
 - multi-turn chat (default)
 - `--monitor` shows CPU/RAM of model process
 
-## 3) Run locally (no container limits)
+## 3) Run locally
 
 Needs `llama-cli` at `./bin/llama-cli` (from `llama.cpp`):
 
@@ -81,6 +79,8 @@ docker compose run --rm llama-runner --no-chat --prompt "Summarize Rust in one p
 - Quantization: `Q4_K_M` (4-bit family).
 - Performance varies with host CPU and Docker version.
 - Monitoring uses Linux `/proc` stats from the container/process.
+
+Production sizing and runtime constraints are defined by the target machine in [hardware.md](hardware.md) and [constraints.md](constraints.md), not by container settings.
 
 ## Low-spec safe mode (first run)
 

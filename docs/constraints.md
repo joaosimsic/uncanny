@@ -12,8 +12,8 @@ Testable targets. Update as measured.
 | Fusion tick | 20 Hz (50 ms) | Smooth motor commands without flicker. |
 | Hysteresis hold | 300 ms | Minimum emotion-state persistence before motor change. |
 | Mood decay | 10 % / s | Decay toward neutral when no input. |
-| RAM budget | ≤ 4 GB resident | Matches `docker-compose.yml` `mem_limit: 4g`. |
-| CPU budget | ≤ 2 cores active for LLM | Matches `docker-compose.yml` `cpus: 2.0`. |
+| RAM budget | Fit within 16 GB system RAM | Must run on the baseline PC in `hardware.md` (16 GB DDR4 shared across OS + all services). |
+| CPU budget | Fit within Ryzen 5 7430U capacity | Must sustain interaction on the baseline 6c/12t CPU defined in `hardware.md`. |
 | Primary language | Portuguese | English support possibly later. |
 
 ## Open

@@ -47,5 +47,4 @@ trait VoiceEmitter {
 ---
 
 ## Notes
-- Mapping is intentionally **delayed and slightly off-tempo**. That delay is the uncanny.
 - Motor command rate gated by hysteresis in fusion (300ms minimum hold).

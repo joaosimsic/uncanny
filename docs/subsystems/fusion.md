@@ -5,7 +5,7 @@ Domain-layer "Social Truth" processor. Reads `PerceptionPacket` from [perception
 ---
 
 ## 1. Goal
-Identify **congruence** — alignment between what a person says and how they act. Incongruence is the source of the robot's uncanny behavior.
+Identify **congruence** — alignment between what a person says and how they act.
 
 ---
 
