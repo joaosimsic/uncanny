@@ -1,4 +1,7 @@
 [workspace]
+exclude = [
+    "tools/llm-benchmark",
+]
 members = [
     "crates/core",
     "crates/embedded",

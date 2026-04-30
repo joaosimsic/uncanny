@@ -22,7 +22,7 @@ selection, not a project-wide benchmark default.
 
 - Rust toolchain (`cargo`)
 - C/C++ build prerequisites for `llama-cpp-4`
-- A GGUF model file (default expected under `models/`)
+- A GGUF model file for **llama.cpp** / `llama-cpp-4` (production intent: **Qwen 2.5 3B Instruct Q4_K_M**, see [decisions.md](decisions.md) ADR-002). Download weights with `./models/install-models.sh` — default path `models/llm/Qwen2.5-3B-Instruct-Q4_K_M.gguf`.
 
 ## Build
 
@@ -44,6 +44,7 @@ cargo build --release
 ### Quick run (uses config auto-discovery)
 
 ```bash
+./models/install-models.sh   # once: fetch GGUF (+ other ONNX weights)
 cd tools/llm-benchmark
 cargo run --release --
 ```
@@ -60,7 +61,7 @@ Precedence is: `CLI flags` > `config file` > `built-in defaults`.
 ```bash
 cd tools/llm-benchmark
 cargo run --release -- \
-  --model-path ../../models/your-model.gguf \
+  --model-path ../../models/llm/Qwen2.5-3B-Instruct-Q4_K_M.gguf \
   --prompt "Summarize local inference tradeoffs in bullets." \
   --warmup-iterations 1 \
   --iterations 5 \
@@ -89,8 +90,8 @@ Notable fields:
 - `timeout_secs`
 - `output`, `jsonl_output`
 
-If `model_path` is not set, the tool auto-discovers the first `.gguf` in:
-`models/`, `../models/`, then `../../models/`.
+If `model_path` is not set, the tool auto-discovers the first `.gguf` under:
+`models/`, `../models/`, then `../../models/` (recursive; typically `models/llm/`).
 
 ## Output artifacts
 

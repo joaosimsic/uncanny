@@ -11,9 +11,14 @@ Robot head with human expression and AI-powered talk. Mechanically exposed (no s
 - [docs/roadmap.md](docs/roadmap.md) — what's done vs designed vs TBD
 - [docs/benchmark.md](docs/benchmark.md) — current LLM benchmark CLI
 
+## Models (weights)
+
+Large `.gguf` / `.onnx` files are not in git. After clone, run `./models/install-models.sh` (see [models/README.md](models/README.md)).
+
 ## Quick start (benchmark only)
 
 ```bash
+./models/install-models.sh
 cd tools/llm-benchmark
 cargo run --release --
 ```

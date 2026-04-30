@@ -1,7 +1,7 @@
 # Central default configuration for llm-benchmark.
 # CLI flags always override these values.
 
-model_path = "../../models/Llama-3.2-1B-Instruct-Q4_K_M.gguf"
+model_path = "../../models/llm/Qwen2.5-3B-Instruct-Q4_K_M.gguf"
 prompts = [
   "You are a concise assistant. Answer in one short paragraph.",
   "Summarize the benefits and tradeoffs of local LLM inference in 6 bullet points.",

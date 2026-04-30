@@ -68,7 +68,7 @@ If `model_path` is omitted, the tool auto-discovers the first `.gguf` found in:
 The config file is TOML. Example:
 
 ```toml
-model_path = "../../models/Llama-3.2-1B-Instruct-Q4_K_M.gguf"
+model_path = "../../models/llm/Qwen2.5-3B-Instruct-Q4_K_M.gguf"
 prompts = [
   "You are a concise assistant. Answer in one short paragraph.",
   "Summarize local inference tradeoffs in bullets.",

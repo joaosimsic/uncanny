@@ -30,6 +30,25 @@ fn discover_default_config_path() -> Option<PathBuf> {
     candidates.into_iter().find(|p| p.exists())
 }
 
+fn collect_ggufs_under(dir: &Path, out: &mut Vec<PathBuf>) {
+    let Ok(entries) = fs::read_dir(dir) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if path.is_dir() {
+            collect_ggufs_under(&path, out);
+        } else if path.is_file()
+            && path
+                .extension()
+                .map(|ext| ext.eq_ignore_ascii_case("gguf"))
+                .unwrap_or(false)
+        {
+            out.push(path);
+        }
+    }
+}
+
 fn discover_model_path() -> Option<PathBuf> {
     let candidates = [
         PathBuf::from("models"),
@@ -38,19 +57,8 @@ fn discover_model_path() -> Option<PathBuf> {
     ];
 
     for dir in candidates {
-        let Ok(entries) = fs::read_dir(&dir) else {
-            continue;
-        };
-        let mut ggufs: Vec<PathBuf> = entries
-            .flatten()
-            .map(|e| e.path())
-            .filter(|p| {
-                p.is_file()
-                    && p.extension()
-                        .map(|ext| ext.to_string_lossy().to_ascii_lowercase() == "gguf")
-                        .unwrap_or(false)
-            })
-            .collect();
+        let mut ggufs = Vec::new();
+        collect_ggufs_under(&dir, &mut ggufs);
         ggufs.sort();
         if let Some(path) = ggufs.into_iter().next() {
             return Some(path);
