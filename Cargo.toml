@@ -1,9 +1,11 @@
-[package]
-name = "ryzen5-llama-env"
-version = "0.1.0"
-edition = "2024"
-
-[dependencies]
-anyhow = "1"
-clap = { version = "4", features = ["derive"] }
-num_cpus = "1"
+[workspace]
+members = [
+    "crates/core",
+    "crates/embedded",
+    "crates/godot",
+]
+default-members = [
+    "crates/core",
+    "crates/godot",
+]
+resolver = "2"
