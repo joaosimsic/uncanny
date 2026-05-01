@@ -7,3 +7,5 @@ bin/
 # Downloaded archives (extracted ONNX lives under models/** — script leaves optional tarballs)
 models/**/*.tar.bz2
 models/.cache/
+
+report.flow.jsonl
