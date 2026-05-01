@@ -38,6 +38,23 @@ Logical meaning of transcribed text.
     - Polarity (positive vs negative words).
     - Sarcasm / irony detection by cross-checking text against acoustic tone (see [fusion.md](fusion.md) §Incongruence).
 
+### Cadence & freshness
+
+Unlike acoustic/visual (continuous, high-rate), semantic is **event-driven**: a value lands only after the LLM finishes a Thinking pass on a completed utterance — typically every few seconds, not every 100 ms. The aggregator therefore cannot assume a fresh semantic value on every tick.
+
+The adapter exposes:
+
+```rust
+trait SemanticSource {
+    fn latest_valence(&self) -> Option<f32>;   // None until first utterance is scored
+    fn last_update(&self) -> Option<Instant>;  // monotonic time of last successful pass
+}
+```
+
+The aggregator copies `latest_valence` into `PerceptionPacket::semantic_valence` verbatim and converts `last_update` into `semantic_age_ms`. Staleness gating (i.e., "this signal is too old to weight") is **fusion's** call — see [fusion.md](fusion.md) §Staleness — keeping the aggregator a dumb projector.
+
+> Raw transcribed text never leaves the adapter. The domain core sees a scalar valence only; LLM tokenization, prompting, and parsing all stay below the port boundary per [architecture.md](../architecture.md).
+
 ---
 
 ## 4. Spatial Stream (Direction of Arrival)
@@ -64,12 +81,26 @@ Emitted every 100ms. Canonical struct used throughout the domain layer:
 
 ```rust
 struct PerceptionPacket {
-    acoustic_valence: f32,   // -1.0..=1.0
-    acoustic_arousal: f32,   //  0.0..=1.0
-    visual_valence: f32,     // -1.0..=1.0
-    user_engagement: f32,    //  0.0..=1.0  (gaze on/off camera)
-    doa_bearing: Option<f32>,// radians; None if no clear source
-    user_id: Option<u32>,    // UPI binding
-    timestamp: std::time::Instant,
+    acoustic_valence: f32,         // -1.0..=1.0
+    acoustic_arousal: f32,         //  0.0..=1.0
+    visual_valence: f32,           // -1.0..=1.0
+    user_engagement: f32,          //  0.0..=1.0  (gaze on/off camera)
+    semantic_valence: Option<f32>, // -1.0..=1.0; None until first LLM pass
+    semantic_age_ms: u32,          //  ms since last semantic update; u32::MAX if never
+    doa_bearing: Option<f32>,      //  radians; None if no clear source
+    user_id: Option<u32>,          //  UPI binding
+    timestamp_secs: f64,           //  seconds since aggregator epoch (serializable)
 }
 ```
+
+### Field semantics
+
+| Field | Cadence | None / sentinel meaning |
+|---|---|---|
+| acoustic_* | every tick (10 Hz) | always populated; silence ⇒ valence ≈ 0, arousal ≈ 0 |
+| visual_* | every tick | always populated; no face ⇒ valence ≈ 0, engagement = 0 |
+| semantic_valence | event-driven (per utterance) | `None` ⇒ no LLM pass has completed yet |
+| semantic_age_ms | every tick | `u32::MAX` ⇒ never updated; otherwise ms since last update |
+| doa_bearing | event-driven (per voiced segment) | `None` ⇒ no clear source localized |
+| user_id | event-driven (UPI) | `None` ⇒ unbound |
+| timestamp_secs | every tick | seconds since aggregator construction (monotonic) |

@@ -15,13 +15,23 @@ Inputs are not equal. Weights are dynamic, scaled by adapter confidence scores.
 ### Valence (positivity)
 Weighted average of three streams:
 
-| Stream | Initial weight |
-|---|---|
-| Acoustic | 45% |
-| Semantic | 35% |
-| Visual | 20% |
+| Stream | Initial weight | Notes |
+|---|---|---|
+| Acoustic | 45% | always present |
+| Semantic | 35% | gated by staleness — see §Staleness |
+| Visual  | 20% | always present |
 
 > Initial weights are guesses. Tune empirically on real conversations.
+
+When semantic is unavailable (no value yet, or stale), its weight is **redistributed proportionally** onto acoustic and visual rather than zeroed: with semantic out, acoustic = 45/65 ≈ 69 %, visual = 20/65 ≈ 31 %. Avoids a "valence collapses toward zero between LLM passes" artifact.
+
+### Staleness
+
+`PerceptionPacket::semantic_valence` is event-driven; it persists between LLM passes. Without a freshness gate, a stale value would pin fusion to a long-past utterance.
+
+Rule: include semantic in the weighted average **iff** `semantic_valence.is_some() && semantic_age_ms <= 3000`. Otherwise treat as missing and redistribute as above.
+
+The 3 s window is a placeholder — wide enough to span "user paused mid-thought", short enough that the bot doesn't echo a stale mood. Tune on real traces.
 
 ### Arousal (energy)
 Driven primarily by SenseVoice (volume / speed) plus facial-landmark jitter (trembling, wide eyes).
@@ -42,6 +52,8 @@ Most critical "uncanny" feature.
 ```
 D = |V_acoustic − V_semantic|
 ```
+
+Computed only when semantic is fresh (per §Staleness). If semantic is missing or stale, `dissonance = 0.0` — incongruence cannot be claimed without a current textual reading.
 
 If `D > 0.6`, trigger **Analytical Stare** state — prioritize visual observation over conversational flow.
 

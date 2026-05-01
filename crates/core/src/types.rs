@@ -6,6 +6,8 @@ pub struct PerceptionPacket {
     pub acoustic_arousal: f32,
     pub visual_valence: f32,
     pub user_engagement: f32,
+    pub semantic_valence: Option<f32>,
+    pub semantic_age_ms: u32,
     pub doa_bearing: Option<f32>,
     pub user_id: Option<u32>,
     pub timestamp_secs: f64,
