@@ -4,3 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+arc-swap = "1.9.1"
+crossbeam-channel = "0.5.15"
+serde = { version = "1.0.228", features = ["derive"] }
+thiserror = "2.0.18"
