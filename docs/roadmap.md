@@ -19,7 +19,9 @@ Status snapshot. Update as components move stages.
 
 ## Next concrete steps
 
+Phase ordering is canonical in [../plan.md](../plan.md); this list is the short-horizon view.
+
 1. Buy ReSpeaker + Arduino + servos.
 2. Bench candidate models on the baseline PC in [hardware.md](hardware.md) and compare latency/stability tradeoffs.
 3. Stub `src/ports/{eye,voice}.rs` with the trait definitions from [subsystems/behavior.md](subsystems/behavior.md).
-4. First sim adapter: print-to-stdout `EyeController` so fusion can be exercised end-to-end without hardware.
+4. First sim adapter (P3 in [../plan.md](../plan.md)): print-to-stdout `EyeController` so fusion can be exercised end-to-end without hardware. Deferrable until target HW arrives.

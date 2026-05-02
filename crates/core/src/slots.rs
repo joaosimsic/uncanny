@@ -16,8 +16,14 @@ impl<T: Clone> Slot<T> {
         self.inner.store(Arc::new(value));
     }
 
+    #[must_use]
     pub fn load(&self) -> T {
         (**self.inner.load()).clone()
+    }
+
+    #[must_use]
+    pub fn load_arc(&self) -> Arc<T> {
+        self.inner.load_full()
     }
 }
 
@@ -31,5 +37,17 @@ mod tests {
         assert_eq!(slot.load(), 10);
         slot.update(20);
         assert_eq!(slot.load(), 20);
+    }
+
+    #[test]
+    fn load_arc_shares_pointer() {
+        let slot = Slot::new(vec![1, 2, 3]);
+        let a = slot.load_arc();
+        let b = slot.load_arc();
+        assert!(Arc::ptr_eq(&a, &b));
+        slot.update(vec![4, 5, 6]);
+        let c = slot.load_arc();
+        assert!(!Arc::ptr_eq(&a, &c));
+        assert_eq!(*c, vec![4, 5, 6]);
     }
 }

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq)]
 pub struct PerceptionPacket {
     pub acoustic_valence: f32,
     pub acoustic_arousal: f32,
@@ -12,7 +12,8 @@ pub struct PerceptionPacket {
     pub user_id: Option<u32>,
     pub timestamp_secs: f64,
 }
-#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq)]
 pub struct SocialContext {
     pub fused_valence: f32,
     pub fused_arousal: f32,
@@ -20,7 +21,8 @@ pub struct SocialContext {
     pub engagement: f32,
     pub is_active: bool,
 }
-#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq)]
+
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub enum EmotionTint {
     Neutral,
     Happy,

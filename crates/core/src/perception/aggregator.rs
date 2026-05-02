@@ -3,6 +3,7 @@ use std::time::Instant;
 use crate::ports::{AcousticSource, SemanticSource, SpatialSource, VisualSource};
 use crate::types::PerceptionPacket;
 
+#[derive(Debug)]
 pub struct PerceptionAggregator<A, V, S, P>
 where
     A: AcousticSource,
@@ -34,6 +35,7 @@ where
         }
     }
 
+    #[must_use = "PerceptionPacket is the aggregator's only output"]
     pub fn tick(&self, now: Instant) -> PerceptionPacket {
         let semantic_valence = self.semantic.latest_valence();
         let semantic_age_ms = match self.semantic.last_update() {
@@ -60,11 +62,11 @@ where
 
 #[cfg(test)]
 mod tests {
-    use std::cell::Cell;
     use std::time::Duration;
 
     use super::*;
 
+    #[derive(Debug)]
     struct Acoustic {
         valence: f32,
         arousal: f32,
@@ -78,6 +80,7 @@ mod tests {
         }
     }
 
+    #[derive(Debug)]
     struct Visual {
         valence: f32,
         engagement: f32,
@@ -91,19 +94,21 @@ mod tests {
         }
     }
 
+    #[derive(Debug)]
     struct Semantic {
-        valence: Cell<Option<f32>>,
-        last: Cell<Option<Instant>>,
+        valence: Option<f32>,
+        last: Option<Instant>,
     }
     impl SemanticSource for Semantic {
         fn latest_valence(&self) -> Option<f32> {
-            self.valence.get()
+            self.valence
         }
         fn last_update(&self) -> Option<Instant> {
-            self.last.get()
+            self.last
         }
     }
 
+    #[derive(Debug)]
     struct Spatial(Option<f32>);
     impl SpatialSource for Spatial {
         fn latest_bearing(&self) -> Option<f32> {
@@ -126,8 +131,8 @@ mod tests {
                 engagement: 0.7,
             },
             Semantic {
-                valence: Cell::new(sem_v),
-                last: Cell::new(sem_at),
+                valence: sem_v,
+                last: sem_at,
             },
             Spatial(Some(1.5)),
             epoch,
@@ -140,12 +145,12 @@ mod tests {
         let a = agg(epoch, Some(epoch), Some(0.5));
         let p = a.tick(epoch + Duration::from_millis(100));
 
-        assert_eq!(p.acoustic_valence, 0.2);
-        assert_eq!(p.acoustic_arousal, 0.4);
-        assert_eq!(p.visual_valence, -0.1);
-        assert_eq!(p.user_engagement, 0.7);
-        assert_eq!(p.semantic_valence, Some(0.5));
-        assert_eq!(p.doa_bearing, Some(1.5));
+        assert!((p.acoustic_valence - 0.2).abs() < 1e-6);
+        assert!((p.acoustic_arousal - 0.4).abs() < 1e-6);
+        assert!((p.visual_valence - (-0.1)).abs() < 1e-6);
+        assert!((p.user_engagement - 0.7).abs() < 1e-6);
+        assert!(matches!(p.semantic_valence, Some(v) if (v - 0.5).abs() < 1e-6));
+        assert!(matches!(p.doa_bearing, Some(v) if (v - 1.5).abs() < 1e-6));
         assert!((p.timestamp_secs - 0.1).abs() < 1e-6);
     }
 
