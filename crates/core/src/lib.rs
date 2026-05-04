@@ -4,3 +4,6 @@ pub mod error;
 
 pub mod ports;
 pub mod perception;
+pub mod fusion;
+pub mod behavior;
+pub mod runtime;
