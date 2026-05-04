@@ -7,6 +7,10 @@ edition = "2024"
 uncanny-core = { path = "../core" }
 serde_json = "1"
 
+[dev-dependencies]
+uncanny-core = { path = "../core" }
+serde_json = "1"
+
 [[bin]]
 name = "sim"
 path = "src/bin/sim.rs"
